@@ -11,7 +11,9 @@ import SwiftUI
 struct TwoApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            // ImmersiveView()
+            // ContentView()
+            SwiftUIView()
         }.windowStyle(.volumetric)
     }
 }

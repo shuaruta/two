@@ -6,13 +6,23 @@
 //
 
 import SwiftUI
+import RealityKit
 
 struct ImmersiveView: View {
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        RealityView { content in
+            // RealityKitコンテンツの追加
+            if let scene = try? Entity.load(named: "ImmersiveScene", in: .main) {
+                content.add(scene)
+            }
+        }
     }
 }
 
-#Preview {
+// RealityKitContentバンドルの設定
+private let realityKitContentBundle = Bundle.main.bundleURL.appendingPathComponent("RealityKitContent.rkassets")
+
+
+#Preview(windowStyle: .volumetric) {
     ImmersiveView()
 }
