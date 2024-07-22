@@ -11,9 +11,9 @@ import SwiftUI
 struct TwoApp: App {
     var body: some Scene {
         WindowGroup {
-            // ImmersiveView()
-            // ContentView()
             SwiftUIView()
-        }.windowStyle(.volumetric)
+        }
+        .windowStyle(.volumetric)
+        .defaultSize(width: 1.0, height: 1.0, depth: 0.01, in: .meters)
     }
 }
