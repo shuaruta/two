@@ -1,95 +1,97 @@
-//
-//  SwiftUIView.swift
-//  Two
-//
-//  Created by Takuya Nishimoto on 2024/06/28.
-//
-
 import SwiftUI
-import AudioToolbox // AudioToolboxをインポート
+import AudioToolbox
 
 struct SwiftUIView: View {
-    @State private var message1: String = "Hello, World!" // 上のテキストの状態を管理する
-    @State private var message2: String = "Tap me!" // 下のテキストの状態を管理する
-    @State private var dragOffset = CGSize.zero
-    @State private var magnification: CGFloat = 1.0
-    @State private var rotation: Angle = .zero
-    @State private var depth: CGFloat = 0.0 // 奥行きを管理する状態変数
+    @State private var targetPosition = CGSize.zero
+    @State private var score = 0
+    @State private var timeRemaining = 30
+    @State private var isGameActive = false
+    @State private var isHovering = false
 
     var body: some View {
         VStack {
+            Text("スコア: \(score)")
+                .font(.largeTitle)
+            
+            Text("残り時間: \(timeRemaining)秒")
+                .font(.title)
+            
             ZStack {
-                RoundedRectangle(cornerRadius: 25)
-                    .fill(Color.blue.opacity(0.5))
-                    .frame(width: 200, height: 200)
-                    .offset(z: 0)
-                
-                Text("前面のテキスト")
-                    .offset(z: 100)
-                    .onTapGesture {
-                        // テキストがタップされたときのアクション
-                        print("前面のテキストがタップされました")
-                        playSystemSound(soundID: 1004) // カレンダーアラートのサウンドID
+                Rectangle()
+                    .fill(Color.red)
+                    .frame(width: 70, height: 70)
+                    .position(x: 150 + targetPosition.width, y: 150 + targetPosition.height)
+                    .gesture(
+                        DragGesture()
+                            .onChanged { value in
+                                targetPosition = value.translation
+                            }
+                            .onEnded { _ in
+                                if isGameActive {
+                                    score += 1
+                                    moveTarget()
+                                    playSystemSound(soundID: 1004)
+                                }
+                            }
+                    )
+                    .onHover { hovering in
+                        isHovering = hovering
                     }
+                    .overlay(
+                        Circle()
+                            .stroke(isHovering ? Color.blue : Color.clear, lineWidth: 4)
+                            .frame(width: 70, height: 70)
+                    )
             }
-
-            Text(message1)
-                .font(.largeTitle) // フォントサイズを大きくする
-                .padding(30) // パディングを追加
-
-            Text(message2)
-                .font(.largeTitle) // フォントサイズを設定
-                .padding(30) // パディングを追加
-
-            Rectangle()
-                .fill(Color.blue)
-                .frame(width: 500, height: 500)
-                .hoverEffect(.automatic)
-                .onTapGesture {
-                    playSystemSound(soundID: 1004)
+            .frame(width: 300, height: 300)
+            .background(Color.gray.opacity(0.2))
+            
+            Button(isGameActive ? "ゲーム終了" : "ゲーム開始") {
+                if isGameActive {
+                    endGame()
+                } else {
+                    startGame()
                 }
-                .offset(dragOffset)
-                .gesture(
-                    DragGesture()
-                        .onChanged { value in
-                            dragOffset = value.translation
-                        }
-                        .onEnded { _ in
-                            dragOffset = .zero
-                        }
-                )
-                .gesture(
-                    LongPressGesture(minimumDuration: 1.0)
-                        .onChanged { _ in
-                            playSystemSound(soundID: 1004)
-                        }
-                        .onEnded { _ in
-                            playSystemSound(soundID: 1004)
-                        }
-                )
-                .gesture(
-                    MagnificationGesture()
-                        .onChanged { value in
-                            magnification = value
-                        }
-                )
-                .scaleEffect(magnification)
-                .gesture(
-                    RotationGesture()
-                        .onChanged { value in
-                            rotation = value
-                        }
-                )
-                .rotationEffect(rotation)
+            }
+            .padding()
+            .background(isGameActive ? Color.red : Color.green)
+            .foregroundColor(.white)
+            .cornerRadius(10)
+        }
+    }
 
+    private func startGame() {
+        isGameActive = true
+        score = 0
+        timeRemaining = 30
+        moveTarget()
+        
+        Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
+            if timeRemaining > 0 {
+                timeRemaining -= 1
+            } else {
+                timer.invalidate()
+                endGame()
+            }
         }
     }
     
+    private func endGame() {
+        isGameActive = false
+        playSystemSound(soundID: 1005) // ゲーム終了音
+    }
+    
+    private func moveTarget() {
+        targetPosition = CGSize(
+            width: CGFloat.random(in: -100...100),
+            height: CGFloat.random(in: -100...100)
+        )
+    }
+
     private func playSystemSound(soundID: SystemSoundID) {
         AudioServicesPlaySystemSound(soundID)
     }
 }
-
 
 #Preview {
     SwiftUIView()
