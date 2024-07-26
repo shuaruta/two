@@ -29,29 +29,7 @@ struct SwiftUIView: View {
     @State private var isButtonDisabled = false
 
     var body: some View {
-        VStack {
-            Button(isGameActive ? "ゲーム終了" : "ゲーム開始") {
-                if isGameActive {
-                    endGame(playSound: true)
-                } else {
-                    startGame()
-                }
-                disableButtonTemporarily()
-            }
-            .padding()
-            .background(isGameActive ? Color.red : Color.green)
-            .foregroundColor(.white)
-            .cornerRadius(10)
-            .disabled(isButtonDisabled)
-
-            Text("スコア: \(score)")
-                .font(.largeTitle)
-                .padding()
-            
-            Text("残り時間: \(timeRemaining)秒")
-                .font(.title)
-                .padding()
-            
+        HStack {
             ZStack {
                 Rectangle()
                     .fill(Color.blue)
@@ -87,7 +65,33 @@ struct SwiftUIView: View {
             .frame(width: gameAreaSize, height: gameAreaSize)
             .background(Color.gray.opacity(0.2))
             .padding()
+ 
+            VStack {
+                Button(isGameActive ? "ゲーム終了" : "ゲーム開始") {
+                    if isGameActive {
+                        endGame(playSound: true)
+                    } else {
+                        startGame()
+                    }
+                    disableButtonTemporarily()
+                }
+                .padding()
+                .background(isGameActive ? Color.red : Color.green)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+                .disabled(isButtonDisabled)
+
+                Text("スコア: \(score)")
+                    .font(.largeTitle)
+                    .padding()
+                
+                Text("残り時間: \(timeRemaining)秒")
+                    .font(.title)
+                    .padding()
+            }
+
         }
+            
     }
 
     private func startGame() {
