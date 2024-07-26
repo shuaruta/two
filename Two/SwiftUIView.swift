@@ -2,11 +2,27 @@ import SwiftUI
 import AudioToolbox
 
 struct SwiftUIView: View {
+    private let targetSize: CGFloat = 70
+    private let ballSize: CGFloat = 50
+    private let gameAreaSize: CGFloat = 300
+    private let targetInitialX: CGFloat = 150
+    private let targetMinX: CGFloat = 35
+    private let targetMaxX: CGFloat = 265
+    private let targetSpeed: CGFloat = 5
+    private let gameDuration: Int = 30
+    private let collisionSoundID: SystemSoundID = 1004
+    private let endGameSoundID: SystemSoundID = 1005
+    private var randomRangeX: ClosedRange<CGFloat> {
+        let halfGameArea = gameAreaSize / 2
+        return -halfGameArea...halfGameArea
+    }
+
     @State private var targetPosition = CGSize.zero
     @State private var ballPosition = CGSize.zero
     @State private var score = 0
     @State private var timeRemaining = 30
     @State private var isGameActive = false
+    @State private var isHovering = false
     @State private var targetYPosition: CGFloat = 0.0
 
     var body: some View {
@@ -34,16 +50,20 @@ struct SwiftUIView: View {
             ZStack {
                 Rectangle()
                     .fill(Color.blue)
-                    .frame(width: 70, height: 70)
-                    .position(x: 150 + targetPosition.width, y: targetYPosition)
+                    .frame(width: targetSize, height: targetSize)
+                    .position(x: targetInitialX + targetPosition.width, y: targetYPosition)
                     .gesture(
                         DragGesture()
                             .onChanged { value in
-                                let newWidth = value.translation.width
-                                let newX = 150 + newWidth
-                                if newX >= 35 && newX <= 265 {
-                                    targetPosition.width = newWidth
-                                }                            }
+                                let newX = value.location.x - targetInitialX
+                                if newX < targetMinX - targetInitialX {
+                                    targetPosition.width = targetMinX - targetInitialX
+                                } else if newX > targetMaxX - targetInitialX {
+                                    targetPosition.width = targetMaxX - targetInitialX
+                                } else {
+                                    targetPosition.width = newX
+                                }
+                            }
                             .onEnded { _ in
                                 if isGameActive {
                                     checkCollision()
@@ -55,11 +75,11 @@ struct SwiftUIView: View {
                 if isGameActive {
                     Circle()
                         .fill(Color.green)
-                        .frame(width: 50, height: 50)
-                    .position(x: 150 + ballPosition.width, y: ballPosition.height)
+                        .frame(width: ballSize, height: ballSize)
+                        .position(x: targetInitialX + ballPosition.width, y: ballPosition.height)
                 }
             }
-            .frame(width: 300, height: 300)
+            .frame(width: gameAreaSize, height: gameAreaSize)
             .background(Color.gray.opacity(0.2))
             .padding()
         }
@@ -68,7 +88,7 @@ struct SwiftUIView: View {
     private func startGame() {
         isGameActive = true
         score = 0
-        timeRemaining = 30
+        timeRemaining = gameDuration
         targetYPosition = 0.0
         targetPosition = CGSize.zero
         moveTarget()
@@ -85,8 +105,8 @@ struct SwiftUIView: View {
         
         Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { timer in
             if isGameActive {
-                targetYPosition += 3
-                if targetYPosition > 300 {
+                targetYPosition += targetSpeed
+                if targetYPosition > gameAreaSize {
                     targetYPosition = 0
                 }
                 checkCollision()
@@ -98,30 +118,30 @@ struct SwiftUIView: View {
     
     private func endGame() {
         isGameActive = false
-        playSystemSound(soundID: 1005) // ゲーム終了音
+        playSystemSound(soundID: endGameSoundID) // ゲーム終了音
     }
     
     private func moveTarget() {
         targetPosition = CGSize(
-            width: CGFloat.random(in: -100...100),
+            width: CGFloat.random(in: randomRangeX),
             height: 0
         )
     }
     
     private func moveBall() {
         ballPosition = CGSize(
-            width: CGFloat.random(in: -100...100),
-            height: CGFloat.random(in: 0...300)
+            width: CGFloat.random(in: randomRangeX),
+            height: CGFloat.random(in: 0...gameAreaSize)
         )
     }
     
     private func checkCollision() {
-        let targetRect = CGRect(x: 150 + targetPosition.width - 35, y: targetYPosition - 35, width: 70, height: 70)
-        let ballRect = CGRect(x: 150 + ballPosition.width - 25, y: ballPosition.height - 25, width: 50, height: 50)
+        let targetRect = CGRect(x: targetInitialX + targetPosition.width - targetSize / 2, y: targetYPosition - targetSize / 2, width: targetSize, height: targetSize)
+        let ballRect = CGRect(x: targetInitialX + ballPosition.width - ballSize / 2, y: ballPosition.height - ballSize / 2, width: ballSize, height: ballSize)
         
         if targetRect.intersects(ballRect) {
             score += 1
-            playSystemSound(soundID: 1004) // 衝突音
+            playSystemSound(soundID: collisionSoundID) // 衝突音
             moveBall()
         }
     }
