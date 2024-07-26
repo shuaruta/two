@@ -24,20 +24,25 @@ struct SwiftUIView: View {
     @State private var isGameActive = false
     @State private var isHovering = false
     @State private var targetYPosition: CGFloat = 0.0
+    @State private var gameTimer: Timer?
+    @State private var movementTimer: Timer?
+    @State private var isButtonDisabled = false
 
     var body: some View {
         VStack {
             Button(isGameActive ? "ゲーム終了" : "ゲーム開始") {
                 if isGameActive {
-                    endGame()
+                    endGame(playSound: true)
                 } else {
                     startGame()
                 }
+                disableButtonTemporarily()
             }
             .padding()
             .background(isGameActive ? Color.red : Color.green)
             .foregroundColor(.white)
             .cornerRadius(10)
+            .disabled(isButtonDisabled)
 
             Text("スコア: \(score)")
                 .font(.largeTitle)
@@ -86,6 +91,8 @@ struct SwiftUIView: View {
     }
 
     private func startGame() {
+        endGame(playSound: false) // 既存のゲームを終了してから新しいゲームを開始
+
         isGameActive = true
         score = 0
         timeRemaining = gameDuration
@@ -94,16 +101,16 @@ struct SwiftUIView: View {
         moveTarget()
         moveBall()
         
-        Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
+        gameTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
             if timeRemaining > 0 {
                 timeRemaining -= 1
             } else {
                 timer.invalidate()
-                endGame()
+                endGame(playSound: true)
             }
         }
         
-        Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { timer in
+        movementTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { timer in
             if isGameActive {
                 targetYPosition += targetSpeed
                 if targetYPosition > gameAreaSize {
@@ -116,9 +123,13 @@ struct SwiftUIView: View {
         }
     }
     
-    private func endGame() {
+    private func endGame(playSound: Bool) {
         isGameActive = false
-        playSystemSound(soundID: endGameSoundID) // ゲーム終了音
+        gameTimer?.invalidate()
+        movementTimer?.invalidate()
+        if playSound {
+            playSystemSound(soundID: endGameSoundID) // ゲーム終了音
+        }
     }
     
     private func moveTarget() {
@@ -169,6 +180,13 @@ struct SwiftUIView: View {
 
     private func playSystemSound(soundID: SystemSoundID) {
         AudioServicesPlaySystemSound(soundID)
+    }
+
+    private func disableButtonTemporarily() {
+        isButtonDisabled = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            isButtonDisabled = false
+        }
     }
 }
 
