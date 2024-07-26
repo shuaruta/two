@@ -136,14 +136,35 @@ struct SwiftUIView: View {
     }
     
     private func checkCollision() {
-        let targetRect = CGRect(x: targetInitialX + targetPosition.width - targetSize / 2, y: targetYPosition - targetSize / 2, width: targetSize, height: targetSize)
-        let ballRect = CGRect(x: targetInitialX + ballPosition.width - ballSize / 2, y: ballPosition.height - ballSize / 2, width: ballSize, height: ballSize)
+        let targetRect = CGRect(
+            x: targetInitialX + targetPosition.width - targetSize / 2,
+            y: targetYPosition - targetSize / 2,
+            width: targetSize,
+            height: targetSize
+        )
+        let ballCenter = CGPoint(
+            x: targetInitialX + ballPosition.width,
+            y: ballPosition.height
+        )
+        let ballRadius = ballSize / 2
         
-        if targetRect.intersects(ballRect) {
+        if rectIntersectsCircle(rect: targetRect, circleCenter: ballCenter, circleRadius: ballRadius) {
             score += 1
             playSystemSound(soundID: collisionSoundID) // 衝突音
             moveBall()
         }
+    }
+    
+    private func rectIntersectsCircle(rect: CGRect, circleCenter: CGPoint, circleRadius: CGFloat) -> Bool {
+        // 円の中心から矩形の最も近い点までの距離を計算し、その距離が円の半径より小さいかどうかを確認
+        let closestX = max(rect.minX, min(circleCenter.x, rect.maxX))
+        let closestY = max(rect.minY, min(circleCenter.y, rect.maxY))
+        
+        let distanceX = circleCenter.x - closestX
+        let distanceY = circleCenter.y - closestY
+        
+        let distanceSquared = (distanceX * distanceX) + (distanceY * distanceY)
+        return distanceSquared < (circleRadius * circleRadius)
     }
 
     private func playSystemSound(soundID: SystemSoundID) {
