@@ -10,11 +10,9 @@
 		5D2A37322C2EAE4E00765F1E /* SwiftUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D2A37312C2EAE4E00765F1E /* SwiftUIView.swift */; };
 		5D2E2A0F2C2BCA1B00111C09 /* RealityKitContent in Frameworks */ = {isa = PBXBuildFile; productRef = 5D2E2A0E2C2BCA1B00111C09 /* RealityKitContent */; };
 		5D2E2A112C2BCA1B00111C09 /* TwoApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D2E2A102C2BCA1B00111C09 /* TwoApp.swift */; };
-		5D2E2A132C2BCA1B00111C09 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D2E2A122C2BCA1B00111C09 /* ContentView.swift */; };
 		5D2E2A152C2BCA1B00111C09 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5D2E2A142C2BCA1B00111C09 /* Assets.xcassets */; };
 		5D2E2A182C2BCA1B00111C09 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5D2E2A172C2BCA1B00111C09 /* Preview Assets.xcassets */; };
 		5D2E2A232C2BCA1C00111C09 /* TwoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D2E2A222C2BCA1C00111C09 /* TwoTests.swift */; };
-		5D2E2A2D2C2BD4E700111C09 /* ImmersiveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D2E2A2C2C2BD4E700111C09 /* ImmersiveView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -32,13 +30,11 @@
 		5D2E2A092C2BCA1B00111C09 /* Two.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Two.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5D2E2A0D2C2BCA1B00111C09 /* RealityKitContent */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RealityKitContent; sourceTree = "<group>"; };
 		5D2E2A102C2BCA1B00111C09 /* TwoApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwoApp.swift; sourceTree = "<group>"; };
-		5D2E2A122C2BCA1B00111C09 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		5D2E2A142C2BCA1B00111C09 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		5D2E2A172C2BCA1B00111C09 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		5D2E2A192C2BCA1B00111C09 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		5D2E2A1E2C2BCA1C00111C09 /* TwoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TwoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		5D2E2A222C2BCA1C00111C09 /* TwoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TwoTests.swift; sourceTree = "<group>"; };
-		5D2E2A2C2C2BD4E700111C09 /* ImmersiveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImmersiveView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -83,12 +79,10 @@
 			isa = PBXGroup;
 			children = (
 				5D2E2A102C2BCA1B00111C09 /* TwoApp.swift */,
-				5D2E2A122C2BCA1B00111C09 /* ContentView.swift */,
 				5D2A37312C2EAE4E00765F1E /* SwiftUIView.swift */,
 				5D2E2A142C2BCA1B00111C09 /* Assets.xcassets */,
 				5D2E2A192C2BCA1B00111C09 /* Info.plist */,
 				5D2E2A162C2BCA1B00111C09 /* Preview Content */,
-				5D2E2A2C2C2BD4E700111C09 /* ImmersiveView.swift */,
 			);
 			path = Two;
 			sourceTree = "<group>";
@@ -220,10 +214,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				5D2E2A132C2BCA1B00111C09 /* ContentView.swift in Sources */,
 				5D2E2A112C2BCA1B00111C09 /* TwoApp.swift in Sources */,
 				5D2A37322C2EAE4E00765F1E /* SwiftUIView.swift in Sources */,
-				5D2E2A2D2C2BD4E700111C09 /* ImmersiveView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
