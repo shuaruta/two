@@ -58,7 +58,7 @@ struct SwiftUIView: View {
                             }
                     )
                     .hoverEffect(.automatic)
-                
+
                 if isGameActive {
                     Circle()
                         .fill(ballColor)
@@ -66,9 +66,12 @@ struct SwiftUIView: View {
                         .scaleEffect(ballScale)
                         .position(x: targetInitialX + ballPosition.width, y: ballPosition.height)
                         .animation(.easeInOut(duration: 0.5), value: ballScale)
+                        .hoverEffect(.automatic)
+                        .offset(z: 10)
                 }
             }
             .frame(width: gameAreaSize, height: gameAreaSize)
+            .frame(depth: 10)
             .background(Color.gray.opacity(0.2))
             .padding()
  
