@@ -17,13 +17,13 @@ struct SwiftUIView: View {
         return -halfGameArea...halfGameArea
     }
 
-    @State private var targetPosition = CGSize.zero
+    @State private var targetXPosition: CGFloat = 0.0
+    @State private var targetYPosition: CGFloat = 0.0
     @State private var ballPosition = CGSize.zero
     @State private var score = 0
     @State private var timeRemaining = 30
     @State private var isGameActive = false
     @State private var isHovering = false
-    @State private var targetYPosition: CGFloat = 0.0
     @State private var gameTimer: Timer?
     @State private var movementTimer: Timer?
     @State private var isButtonDisabled = false
@@ -37,17 +37,18 @@ struct SwiftUIView: View {
                 Rectangle()
                     .fill(Color.blue)
                     .frame(width: targetSize, height: targetSize)
-                    .position(x: targetInitialX + targetPosition.width, y: targetYPosition)
+                    .position(x: targetInitialX + targetXPosition, y: targetYPosition)
+                    .animation(.easeInOut(duration: 0.1), value: targetXPosition)
                     .gesture(
                         DragGesture()
                             .onChanged { value in
                                 let newX = value.location.x - targetInitialX
                                 if newX < targetMinX - targetInitialX {
-                                    targetPosition.width = targetMinX - targetInitialX
+                                    targetXPosition = targetMinX - targetInitialX
                                 } else if newX > targetMaxX - targetInitialX {
-                                    targetPosition.width = targetMaxX - targetInitialX
+                                    targetXPosition = targetMaxX - targetInitialX
                                 } else {
-                                    targetPosition.width = newX
+                                    targetXPosition = newX
                                 }
                             }
                             .onEnded { _ in
@@ -89,10 +90,12 @@ struct SwiftUIView: View {
                 Text("スコア: \(score)")
                     .font(.largeTitle)
                     .padding()
+                    .frame(width: 200, alignment: .leading) // 固定幅を設定
                 
                 Text("残り時間: \(timeRemaining)秒")
                     .font(.title)
                     .padding()
+                    .frame(width: 200, alignment: .leading) // 固定幅を設定
             }
 
         }
@@ -106,7 +109,7 @@ struct SwiftUIView: View {
         score = 0
         timeRemaining = gameDuration
         targetYPosition = 0.0
-        targetPosition = CGSize.zero
+        targetXPosition = 0.0
         moveTarget()
         moveBall()
         
@@ -121,7 +124,9 @@ struct SwiftUIView: View {
         
         movementTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { timer in
             if isGameActive {
-                targetYPosition += targetSpeed
+                withAnimation(targetYPosition > gameAreaSize ? nil : .easeInOut(duration: 0.1)) {
+                    targetYPosition += targetSpeed
+                }
                 if targetYPosition > gameAreaSize {
                     targetYPosition = 0
                 }
@@ -142,24 +147,47 @@ struct SwiftUIView: View {
     }
     
     private func moveTarget() {
-        targetPosition = CGSize(
-            width: CGFloat.random(in: randomRangeX),
-            height: 0
-        )
+        targetXPosition = CGFloat.random(in: randomRangeX)
+        targetYPosition = 0
     }
     
     private func moveBall() {
-        ballPosition = CGSize(
-            width: CGFloat.random(in: randomRangeX),
-            height: CGFloat.random(in: 0...gameAreaSize)
-        )
+        var newBallPosition: CGSize
+        var attempts = 0
+        let maxAttempts = 100
+
+        repeat {
+            newBallPosition = CGSize(
+                width: CGFloat.random(in: randomRangeX),
+                height: CGFloat.random(in: 0...gameAreaSize)
+            )
+            attempts += 1
+        } while checkCollision(newBallPosition: newBallPosition) && attempts < maxAttempts
+
+        ballPosition = newBallPosition
     }
-    
+
+    private func checkCollision(newBallPosition: CGSize) -> Bool {
+        let targetRect = CGRect(
+            x: targetInitialX + targetXPosition - targetSize / 2,
+            y: targetYPosition - targetSize / 2,
+            width: targetSize,
+            height: targetSize
+        )
+        let ballCenter = CGPoint(
+            x: targetInitialX + newBallPosition.width,
+            y: newBallPosition.height
+        )
+        let ballRadius = ballSize / 2
+
+        return rectIntersectsCircle(rect: targetRect, circleCenter: ballCenter, circleRadius: ballRadius)
+    }
+
     private func checkCollision() {
         guard !isCollisionProcessing else { return } // 衝突処理中なら何もしない
 
         let targetRect = CGRect(
-            x: targetInitialX + targetPosition.width - targetSize / 2,
+            x: targetInitialX + targetXPosition - targetSize / 2,
             y: targetYPosition - targetSize / 2,
             width: targetSize,
             height: targetSize
