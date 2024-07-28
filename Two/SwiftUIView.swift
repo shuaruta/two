@@ -23,7 +23,6 @@ struct SwiftUIView: View {
     @State private var score = 0
     @State private var timeRemaining = 30
     @State private var isGameActive = false
-    @State private var isHovering = false
     @State private var gameTimer: Timer?
     @State private var movementTimer: Timer?
     @State private var isButtonDisabled = false
@@ -49,11 +48,6 @@ struct SwiftUIView: View {
                                     targetXPosition = targetMaxX - targetInitialX
                                 } else {
                                     targetXPosition = newX
-                                }
-                            }
-                            .onEnded { _ in
-                                if isGameActive {
-                                    checkCollision()
                                 }
                             }
                     )
