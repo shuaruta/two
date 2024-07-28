@@ -27,6 +27,9 @@ struct SwiftUIView: View {
     @State private var gameTimer: Timer?
     @State private var movementTimer: Timer?
     @State private var isButtonDisabled = false
+    @State private var ballColor = Color.green // ボールの色を管理する変数
+    @State private var ballScale: CGFloat = 1.0 // ボールのスケールを管理する変数
+    @State private var isCollisionProcessing = false // 衝突処理中かどうかを管理するフラグ
 
     var body: some View {
         HStack {
@@ -57,9 +60,11 @@ struct SwiftUIView: View {
                 
                 if isGameActive {
                     Circle()
-                        .fill(Color.green)
+                        .fill(ballColor)
                         .frame(width: ballSize, height: ballSize)
+                        .scaleEffect(ballScale)
                         .position(x: targetInitialX + ballPosition.width, y: ballPosition.height)
+                        .animation(.easeInOut(duration: 0.5), value: ballScale)
                 }
             }
             .frame(width: gameAreaSize, height: gameAreaSize)
@@ -151,6 +156,8 @@ struct SwiftUIView: View {
     }
     
     private func checkCollision() {
+        guard !isCollisionProcessing else { return } // 衝突処理中なら何もしない
+
         let targetRect = CGRect(
             x: targetInitialX + targetPosition.width - targetSize / 2,
             y: targetYPosition - targetSize / 2,
@@ -164,9 +171,21 @@ struct SwiftUIView: View {
         let ballRadius = ballSize / 2
         
         if rectIntersectsCircle(rect: targetRect, circleCenter: ballCenter, circleRadius: ballRadius) {
+            isCollisionProcessing = true // 衝突処理中に設定
             score += 1
             playSystemSound(soundID: collisionSoundID) // 衝突音
-            moveBall()
+
+            // ボールの色と大きさを変化させる
+            ballColor = .yellow
+            ballScale = 0.5
+            
+            // 少し遅延を加えてからボールを移動し、再表示する
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                moveBall()
+                ballColor = .green
+                ballScale = 1.0
+                isCollisionProcessing = false // 衝突処理中を解除
+            }
         }
     }
     
