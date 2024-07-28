@@ -121,11 +121,12 @@ struct SwiftUIView: View {
         
         movementTimer = Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { timer in
             if isGameActive {
-                withAnimation(targetYPosition > gameAreaSize ? nil : .easeInOut(duration: 0.1)) {
-                    targetYPosition += targetSpeed
-                }
                 if targetYPosition > gameAreaSize {
                     targetYPosition = 0
+                } else {
+                    withAnimation(.easeInOut(duration: 0.1)) {
+                        targetYPosition += targetSpeed
+                    }
                 }
                 checkCollision()
             } else {
