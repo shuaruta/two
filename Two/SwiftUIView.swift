@@ -67,8 +67,8 @@ struct SwiftUIView: View {
             .frame(width: gameAreaSize, height: gameAreaSize)
             .frame(depth: 10)
             .background(Color.gray.opacity(0.2))
-            .padding()
- 
+            .padding(120)
+
             VStack {
                 Button(isGameActive ? "ゲーム終了" : "ゲーム開始") {
                     if isGameActive {
