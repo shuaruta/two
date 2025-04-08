@@ -11,7 +11,7 @@ import SwiftUI
 struct TwoApp: App {
     var body: some Scene {
         WindowGroup {
-            SwiftUIView()
+            GameView()
         }
         .defaultSize(width: 800, height: 600)
     }
