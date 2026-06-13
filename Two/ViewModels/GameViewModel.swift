@@ -31,10 +31,8 @@ class GameViewModel: ObservableObject {
         model.isGameActive = true
         model.score = 0
         model.timeRemaining = model.settings.gameDuration
-        model.targetYPosition = 0.0
-        model.targetXPosition = 0.0
-        
-        moveTarget()
+
+        resetTargets()
         moveBall()
         
         setupTimers()
@@ -74,82 +72,86 @@ class GameViewModel: ObservableObject {
     }
     
     private func updateTargetPosition() {
-        if model.targetYPosition > model.settings.gameAreaSize {
-            model.targetYPosition = 0
-        } else {
-            model.targetYPosition += model.settings.targetSpeed
+        for index in model.targets.indices {
+            if model.targets[index].yPosition > model.settings.gameAreaSize {
+                model.targets[index].yPosition = 0
+            } else {
+                model.targets[index].yPosition += model.settings.targetSpeed
+            }
         }
     }
-    
-    private func moveTarget() {
-        model.targetXPosition = CGFloat.random(in: model.randomRangeX)
-        model.targetYPosition = 0
+
+    private func resetTargets() {
+        for index in model.targets.indices {
+            model.targets[index].xPosition = GameModel.targetInitialXOffsets[index]
+            // 2つ目以降は半周期ずらして単調な動きを避ける
+            model.targets[index].yPosition = model.settings.gameAreaSize / 2 * CGFloat(index)
+        }
     }
-    
+
     private func moveBall() {
         var newBallPosition: CGSize
         var attempts = 0
         let maxAttempts = 100
-        
+
         repeat {
             newBallPosition = CGSize(
                 width: CGFloat.random(in: model.randomRangeX),
                 height: CGFloat.random(in: 0...model.settings.gameAreaSize)
             )
             attempts += 1
-        } while checkCollision(newBallPosition: newBallPosition) && attempts < maxAttempts
-        
+        } while overlapsAnyTarget(ballPosition: newBallPosition) && attempts < maxAttempts
+
         model.ballPosition = newBallPosition
+        model.ballTargetIndex = Int.random(in: 0..<model.targets.count)
+        model.ballColor = GameModel.targetColors[model.ballTargetIndex]
     }
-    
-    private func checkCollision(newBallPosition: CGSize) -> Bool {
-        let targetRect = CGRect(
-            x: model.settings.targetInitialX + model.targetXPosition - model.settings.targetSize / 2,
-            y: model.targetYPosition - model.settings.targetSize / 2,
+
+    private func targetRect(at index: Int) -> CGRect {
+        CGRect(
+            x: model.settings.targetInitialX + model.targets[index].xPosition - model.settings.targetSize / 2,
+            y: model.targets[index].yPosition - model.settings.targetSize / 2,
             width: model.settings.targetSize,
             height: model.settings.targetSize
         )
-        
-        let ballCenter = CGPoint(
-            x: model.settings.targetInitialX + newBallPosition.width,
-            y: newBallPosition.height
-        )
-        
-        let ballRadius = model.settings.ballSize / 2
-        
-        return rectIntersectsCircle(rect: targetRect, circleCenter: ballCenter, circleRadius: ballRadius)
     }
-    
+
+    private func overlapsAnyTarget(ballPosition: CGSize) -> Bool {
+        let ballCenter = CGPoint(
+            x: model.settings.targetInitialX + ballPosition.width,
+            y: ballPosition.height
+        )
+        let ballRadius = model.settings.ballSize / 2
+
+        return model.targets.indices.contains { index in
+            rectIntersectsCircle(rect: targetRect(at: index), circleCenter: ballCenter, circleRadius: ballRadius)
+        }
+    }
+
     private func checkCollision() {
         guard !model.isCollisionProcessing else { return }
-        
-        let targetRect = CGRect(
-            x: model.settings.targetInitialX + model.targetXPosition - model.settings.targetSize / 2,
-            y: model.targetYPosition - model.settings.targetSize / 2,
-            width: model.settings.targetSize,
-            height: model.settings.targetSize
-        )
-        
+
         let ballCenter = CGPoint(
             x: model.settings.targetInitialX + model.ballPosition.width,
             y: model.ballPosition.height
         )
-        
         let ballRadius = model.settings.ballSize / 2
-        
-        if rectIntersectsCircle(rect: targetRect, circleCenter: ballCenter, circleRadius: ballRadius) {
+
+        // 得点になるのはボールと同じ色のターゲットに当てたときだけ
+        let scoringRect = targetRect(at: model.ballTargetIndex)
+
+        if rectIntersectsCircle(rect: scoringRect, circleCenter: ballCenter, circleRadius: ballRadius) {
             model.isCollisionProcessing = true
             model.score += 1
             playSystemSound(soundID: model.settings.collisionSoundID)
-            
+
             model.ballColor = .yellow
             model.ballScale = 0.5
-            
+
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
                 guard let self = self else { return }
-                
+
                 self.moveBall()
-                self.model.ballColor = .green
                 self.model.ballScale = 1.0
                 self.model.isCollisionProcessing = false
             }
@@ -171,18 +173,12 @@ class GameViewModel: ObservableObject {
         AudioServicesPlaySystemSound(soundID)
     }
 
-    func updateTargetXPosition(basedOn locationX: CGFloat) {
+    func updateTargetXPosition(index: Int, basedOn locationX: CGFloat) {
         let newX = locationX - model.settings.targetInitialX
         let minX = model.settings.targetMinX - model.settings.targetInitialX
         let maxX = model.settings.targetMaxX - model.settings.targetInitialX
 
-        if newX < minX {
-            model.targetXPosition = minX
-        } else if newX > maxX {
-            model.targetXPosition = maxX
-        } else {
-            model.targetXPosition = newX
-        }
+        model.targets[index].xPosition = min(max(newX, minX), maxX)
     }
     
     func disableButtonTemporarily() {
