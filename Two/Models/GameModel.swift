@@ -59,20 +59,31 @@ struct GameModel {
     }
     
     
+    struct TargetState {
+        var xPosition: CGFloat = 0.0
+        var yPosition: CGFloat = 0.0
+    }
+
+    static let targetColors: [Color] = [.blue, .red]
+
+    static let targetInitialXOffsets: [CGFloat] = [-75, 75]
+
     var score: Int = 0
-    
+
     var timeRemaining: Int
-    
+
     var isGameActive: Bool = false
-    
-    var targetXPosition: CGFloat = 0.0
-    
-    var targetYPosition: CGFloat = 0.0
-    
+
+    var targets: [TargetState] = GameModel.targetInitialXOffsets.map {
+        TargetState(xPosition: $0)
+    }
+
     var ballPosition = CGSize.zero
-    
-    var ballColor: Color = .green
-    
+
+    var ballTargetIndex: Int = 0
+
+    var ballColor: Color = GameModel.targetColors[0]
+
     var ballScale: CGFloat = 1.0
     
     var isCollisionProcessing: Bool = false

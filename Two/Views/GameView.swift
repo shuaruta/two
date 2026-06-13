@@ -22,21 +22,23 @@ struct GameAreaView: View {
     
     var body: some View {
         ZStack {
-            Rectangle()
-                .fill(Color.blue)
-                .frame(width: viewModel.model.settings.targetSize, height: viewModel.model.settings.targetSize)
-                .position(
-                    x: viewModel.model.settings.targetInitialX + viewModel.model.targetXPosition,
-                    y: viewModel.model.targetYPosition
-                )
-                .animation(.easeInOut(duration: 0.1), value: viewModel.model.targetXPosition)
-                .gesture(
-                    DragGesture()
-                        .onChanged { value in
-                            viewModel.updateTargetXPosition(basedOn: value.location.x)
-                        }
-                )
-                .hoverEffect(.automatic)
+            ForEach(viewModel.model.targets.indices, id: \.self) { index in
+                Rectangle()
+                    .fill(GameModel.targetColors[index])
+                    .frame(width: viewModel.model.settings.targetSize, height: viewModel.model.settings.targetSize)
+                    .position(
+                        x: viewModel.model.settings.targetInitialX + viewModel.model.targets[index].xPosition,
+                        y: viewModel.model.targets[index].yPosition
+                    )
+                    .animation(.easeInOut(duration: 0.1), value: viewModel.model.targets[index].xPosition)
+                    .gesture(
+                        DragGesture()
+                            .onChanged { value in
+                                viewModel.updateTargetXPosition(index: index, basedOn: value.location.x)
+                            }
+                    )
+                    .hoverEffect(.automatic)
+            }
             
             if viewModel.model.isGameActive {
                 Circle()
