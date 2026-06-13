@@ -14,6 +14,12 @@ struct GameView: View {
             
             GameControlsView(viewModel: viewModel)
         }
+        .onAppear {
+            // デバッグ用: シミュレータ検証でゲームを自動開始する
+            if ProcessInfo.processInfo.arguments.contains("-autostart") {
+                viewModel.startGame()
+            }
+        }
     }
 }
 
@@ -43,18 +49,15 @@ struct GameAreaView: View {
             if viewModel.model.isGameActive {
                 Circle()
                     .fill(viewModel.model.ballColor)
+                    .padding(4)
+                    .background(Circle().fill(Color.white))
                     .frame(width: viewModel.model.settings.ballSize, height: viewModel.model.settings.ballSize)
-                    .overlay(
-                        // 同色のターゲットに重なっても見分けられるよう輪郭を立てる
-                        Circle().stroke(.white, lineWidth: 4)
-                    )
                     .scaleEffect(viewModel.model.ballScale)
                     .position(
                         x: viewModel.model.settings.targetInitialX + viewModel.model.ballPosition.width,
                         y: viewModel.model.ballPosition.height
                     )
                     .animation(.easeInOut(duration: 0.5), value: viewModel.model.ballScale)
-                    .offset(z: 10)
             }
         }
         .frame(width: viewModel.model.settings.gameAreaSize, height: viewModel.model.settings.gameAreaSize)
