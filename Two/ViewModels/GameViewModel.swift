@@ -126,10 +126,8 @@ class GameViewModel: ObservableObject {
 
         model.ballPosition = newBallPosition
         model.ballTargetIndex = Int.random(in: 0..<model.targets.count)
-        // 色合わせがあるレベルではターゲットの色、それ以外は従来どおり緑
-        model.ballColor = model.requiresColorMatch
-            ? GameModel.targetColors[model.ballTargetIndex]
-            : .green
+        // ボールは常に「得点できるターゲット」と同じ色で出現する
+        model.ballColor = model.targetColor(at: model.ballTargetIndex)
     }
 
     private func targetRect(at index: Int) -> CGRect {

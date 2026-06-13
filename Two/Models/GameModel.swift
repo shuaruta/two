@@ -92,7 +92,7 @@ struct GameModel {
 
     var ballTargetIndex: Int = 0
 
-    var ballColor: Color = .green
+    var ballColor: Color = GameModel.targetColors[0]
 
     var ballScale: CGFloat = 1.0
 

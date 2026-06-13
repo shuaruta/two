@@ -50,7 +50,6 @@ struct GameAreaView: View {
                         y: viewModel.model.ballPosition.height
                     )
                     .animation(.easeInOut(duration: 0.5), value: viewModel.model.ballScale)
-                    .hoverEffect(.automatic)
                     .offset(z: 10)
             }
         }
