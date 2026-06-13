@@ -14,12 +14,6 @@ struct GameView: View {
             
             GameControlsView(viewModel: viewModel)
         }
-        .onAppear {
-            // デバッグ用: シミュレータ検証でゲームを自動開始する
-            if ProcessInfo.processInfo.arguments.contains("-autostart") {
-                viewModel.startGame()
-            }
-        }
     }
 }
 

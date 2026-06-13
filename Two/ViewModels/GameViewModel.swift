@@ -130,7 +130,6 @@ class GameViewModel: ObservableObject {
         model.ballTargetIndex = Int.random(in: 0..<model.targets.count)
         // ボールは常に「得点できるターゲット」と同じ色で出現する
         model.ballColor = model.targetColor(at: model.ballTargetIndex)
-        print("DEBUG moveBall: pos=\(newBallPosition) scale=\(model.ballScale) active=\(model.isGameActive) attempts=\(attempts)")
     }
 
     private func targetRect(at index: Int) -> CGRect {
