@@ -30,6 +30,11 @@ class GameViewModel: ObservableObject {
         
         model.isGameActive = true
         model.score = 0
+        model.level = 1
+        model.levelScore = 0
+        model.isGameCleared = false
+        model.isCollisionProcessing = false
+        model.ballScale = 1.0
         model.timeRemaining = model.settings.gameDuration
 
         resetTargets()
@@ -82,11 +87,30 @@ class GameViewModel: ObservableObject {
     }
 
     private func resetTargets() {
-        for index in model.targets.indices {
-            model.targets[index].xPosition = GameModel.targetInitialXOffsets[index]
+        let offsets = GameModel.initialXOffsets(targetCount: model.targetCount)
+        model.targets = offsets.enumerated().map { index, offset in
             // 2つ目以降は半周期ずらして単調な動きを避ける
-            model.targets[index].yPosition = model.settings.gameAreaSize / 2 * CGFloat(index)
+            GameModel.TargetState(
+                xPosition: offset,
+                yPosition: model.settings.gameAreaSize / 2 * CGFloat(index)
+            )
         }
+    }
+
+    private func advanceLevel() {
+        if model.level >= GameModel.maxLevel {
+            model.isGameCleared = true
+            endGame(playSound: true)
+            return
+        }
+
+        model.level += 1
+        model.levelScore = 0
+        model.timeRemaining = model.settings.gameDuration
+        playSystemSound(soundID: model.settings.endGameSoundID)
+
+        resetTargets()
+        moveBall()
     }
 
     private func moveBall() {
@@ -104,7 +128,8 @@ class GameViewModel: ObservableObject {
 
         model.ballPosition = newBallPosition
         model.ballTargetIndex = Int.random(in: 0..<model.targets.count)
-        model.ballColor = GameModel.targetColors[model.ballTargetIndex]
+        // ボールは常に「得点できるターゲット」と同じ色で出現する
+        model.ballColor = model.targetColor(at: model.ballTargetIndex)
     }
 
     private func targetRect(at index: Int) -> CGRect {
@@ -137,12 +162,19 @@ class GameViewModel: ObservableObject {
         )
         let ballRadius = model.settings.ballSize / 2
 
-        // 得点になるのはボールと同じ色のターゲットに当てたときだけ
-        let scoringRect = targetRect(at: model.ballTargetIndex)
+        // 色合わせがあるレベルではボールと同じ色のターゲットだけ、それ以外はどのターゲットでも得点
+        let scoringIndices = model.requiresColorMatch
+            ? [model.ballTargetIndex]
+            : Array(model.targets.indices)
 
-        if rectIntersectsCircle(rect: scoringRect, circleCenter: ballCenter, circleRadius: ballRadius) {
+        let isHit = scoringIndices.contains { index in
+            rectIntersectsCircle(rect: targetRect(at: index), circleCenter: ballCenter, circleRadius: ballRadius)
+        }
+
+        if isHit {
             model.isCollisionProcessing = true
             model.score += 1
+            model.levelScore += 1
             playSystemSound(soundID: model.settings.collisionSoundID)
 
             model.ballColor = .yellow
@@ -151,9 +183,17 @@ class GameViewModel: ObservableObject {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
                 guard let self = self else { return }
 
-                self.moveBall()
+                // ゲーム終了で中断された場合でも、次のゲームに状態を持ち越さない
                 self.model.ballScale = 1.0
                 self.model.isCollisionProcessing = false
+
+                guard self.model.isGameActive else { return }
+
+                if self.model.levelScore >= GameModel.clearScore {
+                    self.advanceLevel()
+                } else {
+                    self.moveBall()
+                }
             }
         }
     }
@@ -174,6 +214,9 @@ class GameViewModel: ObservableObject {
     }
 
     func updateTargetXPosition(index: Int, basedOn locationX: CGFloat) {
+        // レベル遷移でターゲット数が変わった直後に古いドラッグイベントが届くことがある
+        guard model.targets.indices.contains(index) else { return }
+
         let newX = locationX - model.settings.targetInitialX
         let minX = model.settings.targetMinX - model.settings.targetInitialX
         let maxX = model.settings.targetMaxX - model.settings.targetInitialX

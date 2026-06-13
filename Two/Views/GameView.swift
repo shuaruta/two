@@ -24,7 +24,7 @@ struct GameAreaView: View {
         ZStack {
             ForEach(viewModel.model.targets.indices, id: \.self) { index in
                 Rectangle()
-                    .fill(GameModel.targetColors[index])
+                    .fill(viewModel.model.targetColor(at: index))
                     .frame(width: viewModel.model.settings.targetSize, height: viewModel.model.settings.targetSize)
                     .position(
                         x: viewModel.model.settings.targetInitialX + viewModel.model.targets[index].xPosition,
@@ -43,6 +43,8 @@ struct GameAreaView: View {
             if viewModel.model.isGameActive {
                 Circle()
                     .fill(viewModel.model.ballColor)
+                    .padding(4)
+                    .background(Circle().fill(Color.white))
                     .frame(width: viewModel.model.settings.ballSize, height: viewModel.model.settings.ballSize)
                     .scaleEffect(viewModel.model.ballScale)
                     .position(
@@ -50,8 +52,6 @@ struct GameAreaView: View {
                         y: viewModel.model.ballPosition.height
                     )
                     .animation(.easeInOut(duration: 0.5), value: viewModel.model.ballScale)
-                    .hoverEffect(.automatic)
-                    .offset(z: 10)
             }
         }
         .frame(width: viewModel.model.settings.gameAreaSize, height: viewModel.model.settings.gameAreaSize)
@@ -74,6 +74,11 @@ struct GameControlsView: View {
             .cornerRadius(10)
             .disabled(viewModel.isButtonDisabled)
             
+            Text("レベル: \(viewModel.model.level) / \(GameModel.maxLevel)")
+                .font(.title)
+                .padding()
+                .frame(width: 200, alignment: .leading)
+
             Text("スコア: \(viewModel.model.score)")
                 .font(.largeTitle)
                 .padding()
@@ -84,6 +89,13 @@ struct GameControlsView: View {
                 .padding()
                 .frame(width: 200, alignment: .leading)
             
+            if viewModel.model.isGameCleared {
+                Text("クリア!")
+                    .font(.largeTitle)
+                    .foregroundColor(.yellow)
+                    .padding()
+            }
+
             if !viewModel.model.isGameActive {
                 Picker("難易度", selection: $viewModel.selectedDifficulty) {
                     Text("1").tag(Difficulty.easy)
