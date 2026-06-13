@@ -26,7 +26,7 @@ struct GameModel {
             targetMinX: 35,
             targetMaxX: 265,
             targetSpeed: 3,
-            gameDuration: 45,
+            gameDuration: 40,
             collisionSoundID: 1004,
             endGameSoundID: 1005
         )
@@ -39,7 +39,7 @@ struct GameModel {
             targetMinX: 35,
             targetMaxX: 265,
             targetSpeed: 5,
-            gameDuration: 30,
+            gameDuration: 40,
             collisionSoundID: 1004,
             endGameSoundID: 1005
         )
@@ -52,7 +52,7 @@ struct GameModel {
             targetMinX: 35,
             targetMaxX: 265,
             targetSpeed: 8,
-            gameDuration: 20,
+            gameDuration: 40,
             collisionSoundID: 1004,
             endGameSoundID: 1005
         )
@@ -66,25 +66,48 @@ struct GameModel {
 
     static let targetColors: [Color] = [.blue, .red]
 
-    static let targetInitialXOffsets: [CGFloat] = [-75, 75]
+    static let maxLevel = 3
+
+    static let clearScore = 10
+
+    static func initialXOffsets(targetCount: Int) -> [CGFloat] {
+        targetCount == 1 ? [0] : [-75, 75]
+    }
 
     var score: Int = 0
+
+    var level: Int = 1
+
+    var levelScore: Int = 0
+
+    var isGameCleared: Bool = false
 
     var timeRemaining: Int
 
     var isGameActive: Bool = false
 
-    var targets: [TargetState] = GameModel.targetInitialXOffsets.map {
-        TargetState(xPosition: $0)
-    }
+    var targets: [TargetState] = [TargetState()]
 
     var ballPosition = CGSize.zero
 
     var ballTargetIndex: Int = 0
 
-    var ballColor: Color = GameModel.targetColors[0]
+    var ballColor: Color = .green
 
     var ballScale: CGFloat = 1.0
+
+    // レベル1: 1個1色 / レベル2: 2個1色 / レベル3: 2個2色
+    var targetCount: Int {
+        level == 1 ? 1 : 2
+    }
+
+    var requiresColorMatch: Bool {
+        level >= GameModel.maxLevel
+    }
+
+    func targetColor(at index: Int) -> Color {
+        requiresColorMatch ? GameModel.targetColors[index] : GameModel.targetColors[0]
+    }
     
     var isCollisionProcessing: Bool = false
     
