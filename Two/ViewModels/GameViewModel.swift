@@ -33,6 +33,8 @@ class GameViewModel: ObservableObject {
         model.level = 1
         model.levelScore = 0
         model.isGameCleared = false
+        model.isCollisionProcessing = false
+        model.ballScale = 1.0
         model.timeRemaining = model.settings.gameDuration
 
         resetTargets()
@@ -180,10 +182,12 @@ class GameViewModel: ObservableObject {
 
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
                 guard let self = self else { return }
-                guard self.model.isGameActive else { return }
 
+                // ゲーム終了で中断された場合でも、次のゲームに状態を持ち越さない
                 self.model.ballScale = 1.0
                 self.model.isCollisionProcessing = false
+
+                guard self.model.isGameActive else { return }
 
                 if self.model.levelScore >= GameModel.clearScore {
                     self.advanceLevel()
@@ -210,6 +214,9 @@ class GameViewModel: ObservableObject {
     }
 
     func updateTargetXPosition(index: Int, basedOn locationX: CGFloat) {
+        // レベル遷移でターゲット数が変わった直後に古いドラッグイベントが届くことがある
+        guard model.targets.indices.contains(index) else { return }
+
         let newX = locationX - model.settings.targetInitialX
         let minX = model.settings.targetMinX - model.settings.targetInitialX
         let maxX = model.settings.targetMaxX - model.settings.targetInitialX
