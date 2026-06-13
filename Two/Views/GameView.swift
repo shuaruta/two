@@ -44,6 +44,10 @@ struct GameAreaView: View {
                 Circle()
                     .fill(viewModel.model.ballColor)
                     .frame(width: viewModel.model.settings.ballSize, height: viewModel.model.settings.ballSize)
+                    .overlay(
+                        // 同色のターゲットに重なっても見分けられるよう輪郭を立てる
+                        Circle().stroke(.white, lineWidth: 4)
+                    )
                     .scaleEffect(viewModel.model.ballScale)
                     .position(
                         x: viewModel.model.settings.targetInitialX + viewModel.model.ballPosition.width,
